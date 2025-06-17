@@ -24,7 +24,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
 
-
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("io.mockk:mockk:1.13.8")
