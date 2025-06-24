@@ -1,10 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
- * description=Base class for locking errors
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/lock/SanctuaryLockException.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

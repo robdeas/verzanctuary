@@ -1,10 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
- * description=CLI handler for the VerZanctuary app.
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/VerZanctuaryCli.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -29,6 +28,9 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
+import tech.robd.verzanctuary.SanctuaryMetadataParser
+import tech.robd.verzanctuary.SanctuaryServiceFactory
+import tech.robd.verzanctuary.VersionSanctuaryManager
 import tech.robd.verzanctuary.commands.*
 
 /**

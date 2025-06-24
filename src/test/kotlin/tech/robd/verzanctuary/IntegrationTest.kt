@@ -1,11 +1,10 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
- * description=General-purpose source file
- * generator=add-robokeytags.groovy
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/IntegrationTest.kt
+ * description=IntegrationTest tests.
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

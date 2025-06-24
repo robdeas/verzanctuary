@@ -1,10 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
- * description=BackupScenario
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/BackupScenario.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -24,7 +23,16 @@
  */
 
 package tech.robd.verzanctuary
-
+/**
+ * Represents common scenarios where a sanctuary snapshot should be taken.
+ *
+ * These scenarios provide structured points to create code backups
+ * for safety and traceability, especially when collaborating with AI,
+ * performing large refactors, or before significant workflow events.
+ *
+ * Usage example:
+ *   manager.quickBackup(BackupScenario.END_OF_DAY)
+ */
 enum class BackupScenario {
     BEFORE_AI_CONSULT,
     BEFORE_REFACTOR,

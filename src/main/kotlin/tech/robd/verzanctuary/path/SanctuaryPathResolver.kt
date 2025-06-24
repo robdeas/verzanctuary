@@ -1,11 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryPathResolver.kt
- * description=General-purpose source file
- * generator=add-robokeytags.groovy
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/path/SanctuaryPathResolver.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

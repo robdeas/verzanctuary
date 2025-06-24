@@ -23,7 +23,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
-
+    testImplementation("org.junit.platform:junit-platform-suite:1.10.2")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("io.mockk:mockk:1.13.8")
@@ -110,60 +110,6 @@ tasks.named<JavaExec>("run") {
     jvmArgs("--enable-preview")
 }
 
-//// Publishing configuration
-//publishing {
-//    publications {
-//        create<MavenPublication>("maven") {
-//            from(components["java"])
-//
-//            pom {
-//                name.set("VerZanctuary")
-//                description.set("A safe sanctuary for your code versions")
-//                url.set("https://github.com/robdeas/verzanctuary")
-//
-//                licenses {
-//                    license {
-//                        name.set("MIT License")
-//                        url.set("https://opensource.org/licenses/MIT")
-//                    }
-//                }
-//
-//                developers {
-//                    developer {
-//                        id.set("robdeas")
-//                        name.set("Rob D")
-//                        email.set("rob@robd.tech")
-//                    }
-//                }
-//
-//                scm {
-//                    connection.set("scm:git:git://github.com/robdeas/verzanctuary.git")
-//                    developerConnection.set("scm:git:ssh://github.com/robdeas/verzanctuary.git")
-//                    url.set("https://github.com/robdeas/verzanctuary")
-//                }
-//            }
-//        }
-//    }
-//
-//    repositories {
-//        maven {
-//            name = "OSSRH"
-//            val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//            val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-//            url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-//
-//            credentials {
-//                username = project.findProperty("ossrhUsername") as String? ?: ""
-//                password = project.findProperty("ossrhPassword") as String? ?: ""
-//            }
-//        }
-//    }
-//}
-
-//// Signing for Maven Central
-//signing {
-//    sign(publishing.publications["maven"])
-//}
 
 graalvmNative {
     binaries {
@@ -171,13 +117,51 @@ graalvmNative {
             imageName.set("verz")
             mainClass.set("tech.robd.verzanctuary.cli.VerZanctuaryCliKt")
 
-            buildArgs.addAll(
-                "--no-fallback",
-                "--install-exit-handlers",
-                "--enable-preview",  // For Java 21 features
-                "-H:+ReportExceptionStackTraces",
-                "-H:IncludeResources=.*\\.properties"
-            )
+            val os = org.gradle.internal.os.OperatingSystem.current()
+            if (os.isLinux) {
+                // Linux: use musl for portability
+                val forceMusl = System.getenv("FORCE_MUSL") == "1" || System.getProperty("forceMusl", "false") == "true"
+
+                if ( file("/etc/alpine-release").exists() || forceMusl) {
+                    // On Alpine (musl) or if forced
+                    buildArgs.addAll(
+                        "--no-fallback",
+                        "--install-exit-handlers",
+                        "--enable-preview",
+                        "-H:+ReportExceptionStackTraces",
+                        "-H:IncludeResources=.*\\.properties",
+                        "--static",
+                        "--libc=musl"
+                    )
+                } else {
+                    // On Ubuntu, Fedora, Debian, etc. (glibc)
+                    buildArgs.addAll(
+                        "--no-fallback",
+                        "--install-exit-handlers",
+                        "--enable-preview",
+                        "-H:+ReportExceptionStackTraces",
+                        "-H:IncludeResources=.*\\.properties"
+                    )
+                }
+            } else if (os.isWindows) {
+                // Windows: default args
+                buildArgs.addAll(
+                    "--no-fallback",
+                    "--install-exit-handlers",
+                    "--enable-preview",
+                    "-H:+ReportExceptionStackTraces",
+                    "-H:IncludeResources=.*\\.properties"
+                )
+            } else {
+                // macOS or others: safe defaults (adjust if you want)
+                buildArgs.addAll(
+                    "--no-fallback",
+                    "--install-exit-handlers",
+                    "--enable-preview",
+                    "-H:+ReportExceptionStackTraces",
+                    "-H:IncludeResources=.*\\.properties"
+                )
+            }
         }
     }
 }

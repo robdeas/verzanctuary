@@ -1,10 +1,10 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/lock/SanctuaryLockManager.kt
  * description=Main lick manager for the sanctuary.
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

@@ -12,6 +12,15 @@ build/
 *.iws
 *.iml
 *.ipr
+.idea/*
+!.idea/codeStyles
+!.idea/runConfigurations
+!.idea/inspectionProfiles
+!.idea/vcs.xml
+!.idea/modules.xml
+*.iml
+.idea/misc.xml
+
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/

@@ -1,10 +1,10 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/lock/LockManager.kt
  * description=LockManager
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -24,11 +24,6 @@
  */
 
 package tech.robd.verzanctuary.lock
-
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
 
 /**
  * Common interface for sanctuary lock management

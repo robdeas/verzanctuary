@@ -1,14 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/VersionSantuaryManager.kt
- * description=SanctuaryMetadataParser parse yaml files into SanctuaryMetadata objects.
- * version=0.1.0
- * date=2025
- * author=RobD
- * licenseUrl=http://www.apache.org/licenses/LICENSE-2.0
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/SanctuaryMetadataParser.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

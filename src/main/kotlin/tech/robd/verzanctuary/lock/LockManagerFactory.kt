@@ -1,10 +1,10 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/lock/SanctuaryLockManager.kt
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/lock/LockManagerFactory.kt
  * description=LockManagerFactory
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -25,8 +25,6 @@
 
 package tech.robd.verzanctuary.lock
 
-import tech.robd.verzanctuary.lock.LockManager
-import tech.robd.verzanctuary.lock.SanctuaryLockManager
 import java.io.File
 
 /**

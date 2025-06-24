@@ -1,6 +1,8 @@
+package tech.robd.verzanctuary
 /**
  * [🧩 File Info]
- * path=src/main/kotlin/tech/robd/verzanctuary/data/SanctuaryIdentity.kt
+ * path=src/test/kotlin/tech/robd/verzanctuary/AllVerzanctuaryTests.kt
+ * description=The main testsuite for IDE visibility.
  * editable=true
  * license=apache
  * [/🧩 File Info]
@@ -22,15 +24,11 @@
  * limitations under the License.
  */
 
-package tech.robd.verzanctuary.data
+import org.junit.platform.suite.api.IncludePackages
+import org.junit.platform.suite.api.SelectPackages
+import org.junit.platform.suite.api.Suite
 
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-
-data class SanctuaryIdentity @OptIn(ExperimentalTime::class) constructor(
-    val projectName: String,
-    val sanctuaryId: String, // Assuming UUID as a String is fine
-    val version: String,
-    val createdUtc: Instant, // Using Instant for the timestamp
-    val boundProjectPath: String
-)
+@Suite
+@SelectPackages("tech.robd.verzanctuary")
+@IncludePackages("tech.robd.verzanctuary")
+class AllVerzanctuaryTests

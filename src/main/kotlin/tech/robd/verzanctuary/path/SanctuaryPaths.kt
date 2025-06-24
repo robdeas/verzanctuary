@@ -1,5 +1,13 @@
 package tech.robd.verzanctuary.path
 /**
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/path/SanctuaryPaths.kt
+ * editable=true
+ * license=apache
+ * [/🧩 File Info]
+ */
+
+/**
  * Copyright 2025 Rob Deas
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
