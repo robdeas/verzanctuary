@@ -1,11 +1,9 @@
 /**
- * [File Info]
- * path=test/kotlin/tech/robd/verzanctuary/IntegrationTest.kt
- * description=General-purpose source file
- * generator=add-robokeytags.groovy
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/VerSanctuaryCliTest.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -30,7 +28,6 @@ package tech.robd.verzanctuary
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.testing.CliktCommandTestResult
 import com.github.ajalt.clikt.testing.test
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -47,7 +44,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class VerSanctuaryCliTest : BaseTest() {
+class VerSanctuaryCliTest : TestBase() {
 
     private lateinit var projectDir: File
     private lateinit var manager: VersionSanctuaryManager

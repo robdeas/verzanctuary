@@ -1,10 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/VerZanctuaryCli.kt
- * description=General-purpose source file
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/data/SanctuaryMetadata.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

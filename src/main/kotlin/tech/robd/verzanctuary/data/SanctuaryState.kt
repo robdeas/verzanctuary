@@ -1,10 +1,9 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
- * description=General-purpose source file
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

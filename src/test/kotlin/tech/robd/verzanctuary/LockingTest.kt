@@ -1,11 +1,20 @@
 /**
  * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
+ * path=src/main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
  * description=General-purpose source file
  * generator=add-robokeytags.groovy
  * editable=true
  * license=apache
  * [File Info]
+ */
+
+/**
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/LockingTest.kt
+ * description=LockingTest tests.
+ * editable=true
+ * license=apache
+ * [/🧩 File Info]
  */
 
 /**
@@ -23,7 +32,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package tech.robd.verzanctuary
 
 
@@ -39,7 +47,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.test.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class LockingTest : BaseTest() {
+class LockingTest : TestBase() {
 
     private lateinit var projectDir: File
     private lateinit var managerWithLocking: VersionSanctuaryManager

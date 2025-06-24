@@ -1,10 +1,10 @@
 /**
- * [File Info]
- * path=test/kotlin/tech/robd/verzanctuary/IntegrationTest.kt
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/data/LastOperation.kt
  * description=LastOperation enum
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

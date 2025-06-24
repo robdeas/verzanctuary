@@ -1,10 +1,10 @@
 package tech.robd.verzanctuary.commands
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/commands/UnlockCommand.kt
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/commands/UnlockCommand.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**

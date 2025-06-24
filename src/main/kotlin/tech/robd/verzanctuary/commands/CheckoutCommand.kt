@@ -1,10 +1,10 @@
 package tech.robd.verzanctuary.commands
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/commands/CheckoutCommand.kt
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/commands/CheckoutCommand.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -22,8 +22,6 @@ package tech.robd.verzanctuary.commands
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument

@@ -1,10 +1,10 @@
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
- * description=General-purpose source file
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/TestBase.kt
+ * description=The base class for tests
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -36,7 +36,7 @@ import java.nio.file.Path
 /**
  * Base test class providing temp directory support for VerZanctuary tests
  */
-abstract class BaseTest {
+abstract class TestBase {
 
     @TempDir
     lateinit var tempDir: Path

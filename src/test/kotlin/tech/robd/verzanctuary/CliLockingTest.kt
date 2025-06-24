@@ -1,10 +1,19 @@
 /**
  * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
+ * path=src/main/kotlin/tech/robd/verzanctuary/data/SanctuaryState.kt
  * description=General-purpose source file
  * editable=true
  * license=apache
  * [File Info]
+ */
+
+/**
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/CliLockingTest.kt
+ * description=CliLockingTest tests.
+ * editable=true
+ * license=apache
+ * [/🧩 File Info]
  */
 
 /**
@@ -51,7 +60,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CLILockingTest : BaseTest() {
+class CliLockingTest : TestBase() {
 
     private lateinit var projectDir: File
     private lateinit var manager: VersionSanctuaryManager

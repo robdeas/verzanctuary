@@ -1,10 +1,10 @@
 package tech.robd.verzanctuary.commands
 /**
- * [File Info]
- * path=main/kotlin/tech/robd/verzanctuary/commands/LockStatusCommand.kt
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/commands/LockStatusCommand.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -32,7 +32,6 @@ import tech.robd.verzanctuary.VersionSanctuaryManager
 
 import java.io.File
 import java.io.IOException
-
 
 class LockStatusCommand : CliktCommand(name = "status") {
 

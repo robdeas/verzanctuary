@@ -1,10 +1,9 @@
 /**
- * [File Info]
- * path=test/kotlin/tech/robd/verzanctuary/VersionSanctuaryManagerTest.kt
- * description=General-purpose source file
+ * [🧩 File Info]
+ * path=src/test/kotlin/tech/robd/verzanctuary/VersionSanctuaryManagerTest.kt
  * editable=true
  * license=apache
- * [File Info]
+ * [/🧩 File Info]
  */
 
 /**
@@ -34,7 +33,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class VersionSanctuaryManagerTest : BaseTest() {
+class VersionSanctuaryManagerTest : TestBase() {
 
     private lateinit var projectDir: File
     private lateinit var manager: VersionSanctuaryManager

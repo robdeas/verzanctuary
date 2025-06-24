@@ -1,26 +1,72 @@
 package tech.robd.verzanctuary.services
 
+/**
+ * [🧩 File Info]
+ * path=src/main/kotlin/tech/robd/verzanctuary/services/SanctuaryGitService.kt
+ * editable=true
+ * license=apache
+ * [/🧩 File Info]
+ */
+
+/**
+ * Copyright 2025 Rob Deas
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.diff.DiffFormatter
+import org.eclipse.jgit.diff.RawTextComparator
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import tech.robd.verzanctuary.SanctuaryMetadataParser
 import tech.robd.verzanctuary.data.SanctuaryMetadata
-import tech.robd.verzanctuary.deleteRecursively
 import tech.robd.verzanctuary.lock.LockManager
 import tech.robd.verzanctuary.path.ConflictInfo
 import tech.robd.verzanctuary.utils.Utils
 import tech.robd.verzanctuary.utils.Utils.SANCTUARY_FOLDER_SUFFIX
 import tech.robd.verzanctuary.utils.Utils.SANCTUARY_WORKING_TMP
+import tech.robd.verzanctuary.utils.deleteRecursively
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.StandardCopyOption
-import java.nio.file.attribute.BasicFileAttributes
 import java.time.LocalDateTime
 
+/**
+ * Provides all Git and version control operations for the VerZanctuary system.
+ *
+ * Handles repository initialization, branch management, patch/diff creation, sanctuary snapshotting,
+ * safe checkouts, and conflict detection for AI-assisted or manual developer workflows.
+ *
+ * Integrates with SanctuaryFileService, SanctuaryConflictService, and event logging for robust,
+ * atomic operations that protect developer work and system integrity.
+ *
+ * @property sanctuaryFileService      For copying files in/out of the repo.
+ * @property sanctuaryConflictService  For finding file/directory conflicts.
+ * @property sanctuaryGitDir           The .git directory for the sanctuary.
+ * @property standardCheckoutPath      Working tree root used for repo operations.
+ * @property projectName               The project’s human-friendly name.
+ * @property sanctuaryDir              Root folder for sanctuary metadata/state.
+ * @property projectRoot               User’s source/project root directory.
+ * @property metadataFile              Location of sanctuary.yaml metadata.
+ * @property parser                    Reads/writes SanctuaryMetadata to YAML.
+ * @property lockManager               For serializing mutating operations.
+ * @property sanctuaryLogService       For audit and trace logging.
+ * @property isGitRepository           Whether the target project is git-based.
+ */
 class SanctuaryGitService(
+    private val sanctuaryFileService: SanctuaryFileService,
+    private val sanctuaryConflictService: SanctuaryConflictService,
     private val sanctuaryGitDir: File,
     private val standardCheckoutPath: File,
     private val projectName: String,
@@ -33,6 +79,13 @@ class SanctuaryGitService(
     private val isGitRepository: Boolean
 ) {
 
+    /**
+     * Initialize or open a sanctuary repository.
+     * - Creates directories and initial metadata if needed.
+     * - If missing, repairs sanctuary.yaml using default values.
+     *
+     * @return Git handle for further operations.
+     */
     fun initializeRepo(): Git {
 
         val headFile = sanctuaryGitDir.resolve("HEAD")
@@ -123,6 +176,48 @@ class SanctuaryGitService(
     }
 
     /**
+     * Generate a patch between two branches using JGit.
+     */
+    fun generatePatch(fromBranch: String, toBranch: String, outputFile: File? = null): String {
+        return lockManager.withLock("generate_patch") {
+            val git = initializeRepo()
+
+            return@withLock try {
+                val repository = git.repository
+                val fromCommit = repository.resolve("refs/heads/$fromBranch")
+                val toCommit = repository.resolve("refs/heads/$toBranch")
+
+                if (fromCommit == null || toCommit == null) {
+                    throw IllegalArgumentException("One or both branches not found: $fromBranch, $toBranch")
+                }
+
+                val outputStream = ByteArrayOutputStream()
+                val formatter = DiffFormatter(outputStream)
+                formatter.setRepository(repository)
+                formatter.setDiffComparator(RawTextComparator.DEFAULT)
+                formatter.isDetectRenames = true
+
+                val fromTree = repository.parseCommit(fromCommit).tree
+                val toTree = repository.parseCommit(toCommit).tree
+
+                formatter.format(fromTree, toTree)
+                formatter.flush()
+
+                val patchContent = outputStream.toString()
+
+                outputFile?.let { file ->
+                    file.writeText(patchContent)
+                    println("Patch saved to: ${file.absolutePath}")
+                }
+
+                patchContent
+            } finally {
+                git.close()
+            }
+        }
+    }
+
+    /**
      * Checkout a specific sanctuary branch
      */
     fun checkoutSanctuary(branchName: String) {
@@ -187,7 +282,6 @@ class SanctuaryGitService(
         }
     }
 
-
     /**
      * Checkout sanctuary to working directory (default behavior)
      */
@@ -231,54 +325,6 @@ class SanctuaryGitService(
     }
 
     /**
-     * Copy all files from Sanctuary to working directory
-     */
-    private fun copyFromSanctuaryToWorkingDirectory() {
-        val sourcePath = standardCheckoutPath.toPath()
-        val targetPath = projectRoot.toPath()
-
-        Files.walkFileTree(sourcePath, object : SimpleFileVisitor<Path>() {
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                val relPath = sourcePath.relativize(dir).toString()
-                if (relPath == ".git" || relPath.startsWith(".git/")) {
-                    // SKIP sanctuary .git entirely
-                    return FileVisitResult.SKIP_SUBTREE
-                }
-                val targetDir = targetPath.resolve(sourcePath.relativize(dir))
-                Files.createDirectories(targetDir)
-                return FileVisitResult.CONTINUE
-            }
-
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                val relPath = sourcePath.relativize(file).toString()
-                if (relPath.startsWith(".git/") || relPath == ".git") {
-                    // Skip .git files
-                    return FileVisitResult.CONTINUE
-                }
-                val targetFile = targetPath.resolve(sourcePath.relativize(file))
-                Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING)
-                return FileVisitResult.CONTINUE
-            }
-        })
-    }
-
-    /**
-     * Copy a single file from temp to working directory
-     */
-    private fun copyFileFromSanctuaryToWorking(filePath: String) {
-        val sourceFile = File(standardCheckoutPath, filePath)
-        val targetFile = File(projectRoot, filePath)
-
-        if (sourceFile.exists()) {
-            targetFile.parentFile?.mkdirs()
-            sourceFile.copyTo(targetFile, overwrite = true)
-            println("✅ Restored: $filePath")
-        } else {
-            println("⚠️  File not found in sanctuary: $filePath")
-        }
-    }
-
-    /**
      * Actually perform the checkout to working directory
      */
     private fun performCheckoutToWorkingUnsafe(branchName: String, files: List<String>) {
@@ -289,11 +335,11 @@ class SanctuaryGitService(
 
             if (files.isEmpty()) {
                 // Copy entire sanctuary to working directory
-                copyFromSanctuaryToWorkingDirectory()
+                sanctuaryFileService.copyFromSanctuaryToWorkingDirectory()
             } else {
                 // Copy specific files
                 files.forEach { filePath ->
-                    copyFileFromSanctuaryToWorking(filePath)
+                    sanctuaryFileService.copyFileFromSanctuaryToWorking(filePath)
                 }
             }
 
@@ -306,143 +352,8 @@ class SanctuaryGitService(
         }
     }
 
-//    fun checkoutSanctuaryToWorking(
-//        branchName: String,
-//        files: List<String> = emptyList(),
-//        forceOverwrite: Boolean = false
-//    ) {
-//        lockManager.withLock("checkout_to_working") {
-//            // 1. First check for potential conflicts
-//            val conflicts = detectPotentialConflicts(branchName, files)
-//
-//            if (conflicts.isNotEmpty()) {
-//                // 2. Warn user about conflicts
-//                println("⚠️  The following files have changed and will cause conflicts:")
-//                conflicts.forEach { conflict ->
-//                    println("  📝 ${conflict.filePath}")
-//                    println("     Working: ${conflict.workingState}")
-//                    println("     Sanctuary: ${conflict.sanctuaryState}")
-//                }
-//                println("")
-//                println("💡 Options:")
-//                println("   • Use --temp to inspect first: verz checkout $branchName --temp")
-//                println("   • Use --force to proceed anyway")
-//                println("   • Commit your current changes first")
-//                println("")
-//
-//                // 3. Abort unless forced
-//                if (!forceOverwrite) {
-//                    println("❌ Checkout aborted to prevent conflicts")
-//                    return@withLock
-//                }
-//            }
-//
-//            // 4. Create safety backup
-//            createSanctuarySnapshotUnsafe("Auto-backup before checkout")
-//
-//            // 5. Proceed with checkout
-//            performCheckoutToWorkingUnsafe(branchName, files)
-//        }
-//    }
-
-
     fun copyFilesToSanctuary() {
-        val sourcePath = projectRoot.toPath()
-        val targetPath = standardCheckoutPath.toPath()
-
-        // Clear existing files in sanctuary (keep directory clean)
-        if (standardCheckoutPath.exists()) {
-            standardCheckoutPath.listFiles()?.forEach { file ->
-                if (file.name != ".git") { // Don't delete the .git directory
-                    file.deleteRecursively()
-                }
-            }
-        } else {
-            standardCheckoutPath.mkdirs()
-        }
-
-        // Copy files, excluding .git directories and sanctuary directories
-        Files.walkFileTree(sourcePath, object : SimpleFileVisitor<Path>() {
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                val dirName = dir.fileName?.toString() ?: return FileVisitResult.CONTINUE
-
-                // Skip .git directories only if we're in a git repository
-                if (isGitRepository && dirName == ".git") {
-                    return FileVisitResult.SKIP_SUBTREE
-                }
-
-                // Skip ALL sanctuary directories (.sanctuary extension)
-                if (dirName.endsWith(SANCTUARY_FOLDER_SUFFIX)) {
-                    return FileVisitResult.SKIP_SUBTREE
-                }
-
-                // Skip sanctuary working temp directories
-                if (dirName == SANCTUARY_WORKING_TMP) {
-                    return FileVisitResult.SKIP_SUBTREE
-                }
-
-                // Skip any directory that matches our known sanctuary locations  ← NEW
-                if (isSanctuaryRelatedDirectory(dir)) {
-                    return FileVisitResult.SKIP_SUBTREE
-                }
-
-                val targetDir = targetPath.resolve(sourcePath.relativize(dir))
-                Files.createDirectories(targetDir)
-                return FileVisitResult.CONTINUE
-            }
-
-            /**
-             * Check if a directory is sanctuary-related and should be excluded
-             */
-            private fun isSanctuaryRelatedDirectory(dir: Path): Boolean {
-                val dirFile = dir.toFile()
-
-                // Check if it's our exact sanctuary directory
-                if (dirFile.absolutePath == sanctuaryDir.absolutePath) {
-                    return true
-                }
-
-                // Check if it's our exact working temp directory
-                if (dirFile.absolutePath == standardCheckoutPath.absolutePath) {
-                    return true
-                }
-
-                // Check if it matches environment variable paths
-                val envSanctuaryDir = System.getenv("VERZANCTUARY_SANCTUARY_DIR")
-                if (envSanctuaryDir != null && dirFile.absolutePath.startsWith(envSanctuaryDir)) {
-                    return true
-                }
-
-                val envWorkspaceDir = System.getenv("VERZANCTUARY_WORKSPACE_DIR")
-                if (envWorkspaceDir != null && dirFile.absolutePath.startsWith(envWorkspaceDir)) {
-                    return true
-                }
-
-                return false
-            }
-
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                // Skip any file living under a .git parent at any level (only if git repo)
-                if (isGitRepository) {
-                    var parent = file.parent
-                    while (parent != null && parent != sourcePath.parent) {
-                        if (parent.fileName?.toString() == ".git") {
-                            return FileVisitResult.CONTINUE
-                        }
-                        parent = parent.parent
-                    }
-                }
-
-                // Skip files in sanctuary-related directories
-                if (isInSanctuaryRelatedDirectory(file, sourcePath)) {
-                    return FileVisitResult.CONTINUE
-                }
-
-                val targetFile = targetPath.resolve(sourcePath.relativize(file))
-                Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING)
-                return FileVisitResult.CONTINUE
-            }
-        })
+        sanctuaryFileService.copyFilesToSanctuary()
     }
 
     /**
@@ -467,11 +378,20 @@ class SanctuaryGitService(
             if (parentName == SANCTUARY_WORKING_TMP) {
                 return true
             }
-
             parent = parent.parent
         }
 
         return false
+    }
+
+    /**
+     * Create a sanctuary snapshot with timestamped branch
+     * Public method that wraps with locking
+     */
+    fun createSanctuarySnapshot(message: String): String {
+        return lockManager.withLock("create_snapshot") {
+            createSanctuarySnapshotUnsafe(message)
+        }
     }
 
     /**
@@ -582,113 +502,47 @@ class SanctuaryGitService(
         } finally {
             git.close()
         }
-
     }
 
-
-
-
     /**
-     * Detect potential conflicts between sanctuary and current working directory
+     * List files in a branch, or all files if not specified.
+     * Used for diff/conflict detection.
      */
-    fun detectPotentialConflicts(branchName: String, files: List<String>): List<ConflictInfo> {
-        val conflicts = mutableListOf<ConflictInfo>()
-
+    private fun listFilesInBranch(branchName: String, files: List<String>): List<String> {
         // First checkout to temp to compare
         val git = initializeRepo()
+        val filesToCheck: List<String>
         try {
             git.checkout().setName(branchName).call()
-
-            val filesToCheck = if (files.isEmpty()) {
-                // Get all files from sanctuary
+            filesToCheck = files.ifEmpty {
+                // this returns the list it was called on if its not empty
+                // and only does the getAllFilesInSanctuary if its empty.
                 getAllFilesInSanctuary()
-            } else {
-                files
-            }
-
-            filesToCheck.forEach { filePath ->
-                val conflict = checkFileForConflict(filePath)
-                if (conflict != null) {
-                    conflicts.add(conflict)
-                }
             }
         } finally {
             git.close()
         }
 
+        return filesToCheck
+    }
+
+    /**
+     * Detect potential conflicts between sanctuary and current working directory
+     */
+    fun detectPotentialConflicts(branchName: String, files: List<String>): List<ConflictInfo> {
+        val conflicts: List<ConflictInfo>//mutableListOf<ConflictInfo>()
+        val filesToCheck = listFilesInBranch(branchName, files)
+        conflicts = sanctuaryConflictService.detectAllPotentialConflicts(branchName, filesToCheck)
+
         return conflicts
     }
 
     /**
-     * Get all files in the currently checked out sanctuary dont forget to ignore .git folder
+     * Get all files in the currently checked-out sanctuary don't forget to ignore the .git folder
      */
     private fun getAllFilesInSanctuary(): List<String> {
-        val files = mutableListOf<String>()
-        val basePath = standardCheckoutPath.toPath()
-
-        Files.walkFileTree(basePath, object : SimpleFileVisitor<Path>() {
-            override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-                val dirName = dir.fileName?.toString()
-
-                // Skip .git directories (same as copying logic)
-                if (isGitRepository && dirName == ".git") {
-                    return FileVisitResult.SKIP_SUBTREE
-                }
-
-                return FileVisitResult.CONTINUE
-            }
-
-            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                // Skip files in .git directories (same as copying logic)
-                if (isInSanctuaryRelatedDirectory(file, basePath)) {
-                    return FileVisitResult.CONTINUE
-                }
-
-                val relativePath = basePath.relativize(file).toString()
-                files.add(relativePath)
-                return FileVisitResult.CONTINUE
-            }
-        })
-
-        return files
+        return sanctuaryFileService.getAllFilesInSanctuary()
     }
-
-
-    /**
-     * Check if a specific file would cause a conflict
-     */
-    fun checkFileForConflict(filePath: String): ConflictInfo? {
-        val workingFile = File(projectRoot, filePath)
-        val sanctuaryFile = File(standardCheckoutPath, filePath)
-
-        val workingExists = workingFile.exists()
-        val sanctuaryExists = sanctuaryFile.exists()
-
-        return when {
-            !workingExists && !sanctuaryExists -> null // No conflict
-            !workingExists && sanctuaryExists -> {
-                // New file from sanctuary
-                ConflictInfo(filePath, "missing", "new file")
-            }
-
-            workingExists && !sanctuaryExists -> {
-                // File exists in working but not in sanctuary
-                ConflictInfo(filePath, "new file", "missing")
-            }
-
-            workingExists && sanctuaryExists -> {
-                // Both exist - check if different
-                if (!Utils.filesAreIdentical(workingFile, sanctuaryFile)) {
-                    ConflictInfo(filePath, "modified", "different content")
-                } else {
-                    null // Same content, no conflict
-                }
-            }
-
-            else -> null
-        }
-    }
-
 
 
 }
